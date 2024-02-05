@@ -1,0 +1,1 @@
+document.getElementById("head").innerHTML = "Battleship"
