@@ -1,3 +1,49 @@
 h1 {
     color: blue;
 }
+
+.naval-grid {
+    margin: auto;
+    display: grid;
+    grid-gap: 10px;
+    grid-template-areas:
+    "none letters"
+    "numbers blocks";
+    grid-template-columns: 30px;
+}
+
+.grid-numbers {
+    grid-area: numbers;
+    display: grid;
+    grid-template-rows: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-gap: 1px;
+    text-align: center;
+    align-items: center;
+}
+
+.grid-letters {
+    grid-area: letters;
+    display: grid;
+    grid-template-columns: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-gap: 1px;
+    text-align: center;
+    align-items: center;
+}
+
+.grid-blocks {
+    grid-area: blocks;
+    display: grid;
+    grid-template-rows: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-template-columns: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-gap: 1px;
+}
+
+.grid-blocks div {
+    background-color: blue;
+}
+
+.grid-blocks {
+    grid-area: blocks;
+    width: 30px;
+    height: 30px;
+}
