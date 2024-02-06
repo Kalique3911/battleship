@@ -2,7 +2,8 @@ h1 {
     color: blue;
 }
 
-.naval-grid {
+.first-naval-grid,
+.second-naval-grid {
     margin: auto;
     display: grid;
     grid-gap: 10px;
