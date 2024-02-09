@@ -8,30 +8,30 @@ document.getElementById('head').innerHTML = 'Battleship'
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+let firstGridLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 
-letters.map(l => {
-    let letter = document.createElement('div')
-    letter.innerHTML = l
-    document.getElementById('firstLetters').appendChild(letter)
+firstGridLetters.map(letter => {
+    let letterElement = document.createElement('div')
+    letterElement.innerHTML = letter
+    document.getElementById('firstLetters').appendChild(letterElement)
 })
 
-let numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+let firstGridNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
-numbers.map(n => {
-    let number = document.createElement('div')
-    number.innerHTML = n
-    number.addEventListener('click', () => {
-        alert(`you clicked number ${n}`)
+firstGridNumbers.map(number => {
+    let numberElement = document.createElement('div')
+    numberElement.innerHTML = number
+    numberElement.addEventListener('click', () => {
+        alert(`you clicked number ${number}`)
     })
-    document.getElementById('firstNumbers').appendChild(number)
+    document.getElementById('firstNumbers').appendChild(numberElement)
 })
 
-numbers.map(n => {
-    letters.map(l => {
+firstGridNumbers.map(number => {
+    firstGridLetters.map(letter => {
         let sqr = document.createElement('div')
         sqr.addEventListener('click', () => {
-            alert(`you clicked square ${l + n}`)
+            alert(`you clicked square ${letter + number}`)
         }, {once: true})
         document.getElementById('firstSquares').appendChild(sqr)
     })
@@ -39,39 +39,48 @@ numbers.map(n => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-let secondLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+let secondGridLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 
-secondLetters.map(l => {
-    let letter = document.createElement('div')
-    letter.innerHTML = l
-    document.getElementById('secondLetters').appendChild(letter)
+secondGridLetters.map(letter => {
+    let letterElement = document.createElement('div')
+    letterElement.innerHTML = letter
+    document.getElementById('secondLetters').appendChild(letterElement)
 })
 
-let secondNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+let secondGridNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
-secondNumbers.map(n => {
-    let number = document.createElement('div')
-    number.innerHTML = n
-    number.addEventListener('click', () => {
-        alert(`you clicked number ${n}`)
+secondGridNumbers.map(number => {
+    let numberElement = document.createElement('div')
+    numberElement.innerHTML = number
+    numberElement.addEventListener('click', () => {
+        alert(`you clicked number ${number}`)
     })
-    document.getElementById('secondNumbers').appendChild(number)
+    document.getElementById('secondNumbers').appendChild(numberElement)
 })
 
-secondNumbers.map(n => {
-    secondLetters.map(l => {
+secondGridNumbers.map(number => {
+    secondGridLetters.map(letter => {
         let sqr = document.createElement('div')
-        sqr.id = `${l}${n}`
+        sqr.id = `${letter}${number}`
         let listener = () => {
-            let c = 0
-            while (shipSize > c) {
-                if (!(occupiedSquares.some(s => s === document.getElementById(`${l}${Number(n) + c}`).id))) {
-                    placedShips.push(`${l}${Number(n) + c}`)
-                    occupiedSquares.push(`${l}${Number(n) + c}`)
-                    if ((secondLetters.indexOf(l) - 1) > -1) {
-                        occupiedSquares.push(`${secondLetters[secondLetters.indexOf(l) - 1]}${Number(n) + c}`)
+            let count = 0
+            if ((secondGridNumbers.indexOf(number) - 1) > -1) {
+                count--
+            }
+            if ((secondGridNumbers.indexOf(number) + 1) < 10) {
+                shipSize++ //we do not really increase shipSize, it is done to cover nearby to the ship squares
+            }
+            while (shipSize > count) {
+                if (!(occupiedSquares.some(ship => ship === document.getElementById(`${letter}${Number(number) + count}`).id))) {
+                    placedShips.push(`${letter}${Number(number) + count}`)
+                    occupiedSquares.push(`${letter}${Number(number) + count}`)
+                    if ((secondGridLetters.indexOf(letter) - 1) > -1) { //no checking of if the square is in occupiedSquares, so it can append the same square multiple times, for now it does not really affects optimization
+                        occupiedSquares.push(`${secondGridLetters[secondGridLetters.indexOf(letter) - 1]}${Number(number) + count}`)
                     }
-                    c++
+                    if ((secondGridLetters.indexOf(letter) + 1) < 10) { //here too
+                        occupiedSquares.push(`${secondGridLetters[secondGridLetters.indexOf(letter) + 1]}${Number(number) + count}`)
+                    }
+                    count++
                 } else {
                     break
                 }
