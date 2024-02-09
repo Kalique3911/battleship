@@ -1,6 +1,14 @@
 let placedShips = []
 let occupiedSquares = []
 let shipSize = 3
+let rotation = 'vertical' || 'horizontal'
+let rotate = () => {
+    if (rotation === 'vertical') {
+        rotation = 'horizontal'
+    } else {
+        rotation = 'vertical'
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,29 +72,68 @@ secondGridNumbers.map(number => {
         sqr.id = `${letter}${number}`
         let listener = () => {
             let count = 0
-            if ((secondGridNumbers.indexOf(number) - 1) > -1) {
-                count--
-            }
-            if ((secondGridNumbers.indexOf(number) + 1) < 10) {
-                shipSize++ //we do not really increase shipSize, it is done to cover nearby to the ship squares
-            }
+            let letterIndex = secondGridLetters.indexOf(letter)
+            let numberIndex = secondGridNumbers.indexOf(number)
+            let isCollision = false
+            let collisionCount = 0
+            let extensionShipSize = shipSize
             while (shipSize > count) {
-                if (!(occupiedSquares.some(ship => ship === document.getElementById(`${letter}${Number(number) + count}`).id))) {
-                    placedShips.push(`${letter}${Number(number) + count}`)
-                    occupiedSquares.push(`${letter}${Number(number) + count}`)
-                    if ((secondGridLetters.indexOf(letter) - 1) > -1) { //no checking of if the square is in occupiedSquares, so it can append the same square multiple times, for now it does not really affects optimization
-                        occupiedSquares.push(`${secondGridLetters[secondGridLetters.indexOf(letter) - 1]}${Number(number) + count}`)
+                let squareName = `${letter}${Number(number) + count}`
+                while (shipSize > collisionCount) {
+                    let collisionSquareName = `${letter}${Number(number) + collisionCount}`
+                    if ((placedShips.some(square => square === collisionSquareName)) || (occupiedSquares.some(square => square === collisionSquareName)) || Number(number) + collisionCount > 10) {
+                        isCollision = true
+                        break
                     }
-                    if ((secondGridLetters.indexOf(letter) + 1) < 10) { //here too
-                        occupiedSquares.push(`${secondGridLetters[secondGridLetters.indexOf(letter) + 1]}${Number(number) + count}`)
-                    }
+                    collisionCount++
+                }
+                if (isCollision) {
+                    break
+                }
+                if (!(occupiedSquares.some(occupiedSquare => occupiedSquare === squareName))) {
+                    placedShips.push(squareName)
                     count++
                 } else {
                     break
                 }
             }
+            count = 0
+            if ((((numberIndex - 1) > -1) && rotation === 'vertical') || (((letterIndex - 1) > -1) && rotation === 'horizontal')) {
+                count--
+            }
+            if ((((numberIndex + 1) < 10) && rotation === 'vertical') || (((letterIndex + 1) < 10) && rotation === 'horizontal')) {
+                extensionShipSize++ //we do not really increase shipSize, it is done to cover nearby to the ship squares
+            }
+            while (extensionShipSize > count) {
+                if (isCollision) {
+                    break
+                }
+                let squareName = `${letter}${Number(number) + count}`
+                occupiedSquares.push(squareName)
+                if ((letterIndex - 1) > -1) { //no checking of if the square is in occupiedSquares, so it can append the same square multiple times, for now it does not really affect optimization
+                    occupiedSquares.push(`${secondGridLetters[letterIndex - 1]}${Number(number) + count}`)
+                }
+                if ((letterIndex + 1) < 10) { //here too
+                    occupiedSquares.push(`${secondGridLetters[letterIndex + 1]}${Number(number) + count}`)
+                }
+                count++
+                if (rotation === 'horizontal') {
+                    let squareName = `${secondGridLetters[letterIndex + count]}${number}`
+                    if (!(occupiedSquares.some(occupiedSquare => occupiedSquare === squareName))) {
+                        placedShips.push(squareName)
+                        occupiedSquares.push(squareName)
+                        if ((numberIndex - 1) > -1) {
+
+                        }
+                    } else {
+                        break
+                    }
+                }
+            }
         }
-        sqr.addEventListener('click', listener, {once: true})
+        sqr.addEventListener('click', listener)
         document.getElementById('secondSquares').appendChild(sqr)
     })
 })
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
