@@ -3,6 +3,11 @@ h1 {
 }
 
 .first-naval-grid,
+.second-grid-wrapper {
+
+}
+
+.first-naval-grid,
 .second-naval-grid {
     margin: auto;
     display: grid;
