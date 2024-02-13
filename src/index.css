@@ -3,13 +3,7 @@ h1 {
 }
 
 .first-naval-grid,
-.second-grid-wrapper {
-
-}
-
-.first-naval-grid,
 .second-naval-grid {
-    margin: auto;
     display: grid;
     grid-gap: 10px;
     grid-template-areas:
@@ -42,14 +36,10 @@ h1 {
     grid-template-rows: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
     grid-template-columns: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
     grid-gap: 1px;
+    width: 30px;
+    height: 30px;
 }
 
 .grid-blocks div {
     background-color: blue;
-}
-
-.grid-blocks {
-    grid-area: blocks;
-    width: 30px;
-    height: 30px;
 }
