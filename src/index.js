@@ -5,13 +5,16 @@ class Ship {
         this.isPlaced = false
         this.coordinates = []
     }
+
     place() {
         this.isPlaced = true
     }
+
     addCoordinates(c) {
         this.coordinates.push(c)
     }
 }
+
 let shipsSizes = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
 let ships = shipsSizes.map((n, i) => {
     let name
@@ -37,6 +40,21 @@ let rotate = () => {
         rotation = 'vertical'
     }
 }
+let enemyShips = shipsSizes.map((n, i) => {
+    let name
+    if (n === 4) {
+        name = 'Battleship'
+    } else if (n === 3) {
+        name = 'Cruiser ' + `${i}`
+    } else if (n === 2) {
+        name = 'Destroyer ' + `${i - 2}`
+    } else {
+        name = 'Boat ' + `${i - 5}`
+    }
+    return new Ship({size: n, name: `${name}`})
+})
+let enemyPlacedShips = []
+let enemyOccupiedSquares = []
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +90,106 @@ firstGridNumbers.map(number => {
         document.getElementById('firstSquares').appendChild(sqr)
     })
 })
+
+let placementCount = 0
+while (placementCount < 10) {
+    let enemyShip = enemyShips[placementCount]
+    let letter = firstGridLetters[Math.round(Math.random() * 9)]
+    let number = firstGridNumbers[Math.round(Math.random() * 9)]
+    let count = 0
+    let letterIndex = firstGridLetters.indexOf(letter)
+    let numberIndex = firstGridNumbers.indexOf(number)
+    let isCollision = false
+    let collisionCount = 0
+    let extensionShipSize = enemyShip.size
+    let passed = false
+    if (Math.random() > 0.5) {
+        rotate()
+    }
+    while (enemyShip.size > count) {
+        if (rotation === 'vertical') {
+            let squareName = `${letter}${Number(number) + count}`
+            while (enemyShip.size > collisionCount) {
+                let collisionSquareName = `${letter}${Number(number) + collisionCount}`
+                if ((enemyPlacedShips.some(square => square === collisionSquareName)) || (enemyOccupiedSquares.some(square => square === collisionSquareName)) || Number(number) + collisionCount > 10) {
+                    isCollision = true
+                    break
+                }
+                collisionCount++
+            }
+            if (isCollision) {
+                break
+            }
+            if (!(enemyOccupiedSquares.some(occupiedSquare => occupiedSquare === squareName))) {
+                enemyPlacedShips.push(squareName)
+                enemyShip.addCoordinates(squareName)
+                count++
+            } else {
+                break
+            }
+        }
+        if (rotation === 'horizontal') {
+            let squareName = `${firstGridLetters[letterIndex + count]}${number}`
+            while (enemyShip.size > collisionCount) {
+                let collisionSquareName = `${firstGridLetters[letterIndex + collisionCount]}${number}`
+                if ((enemyPlacedShips.some(square => square === collisionSquareName)) || (enemyOccupiedSquares.some(square => square === collisionSquareName)) || Number(number) + collisionCount > 10) {
+                    isCollision = true
+                    break
+                }
+                collisionCount++
+            }
+            if (isCollision) {
+                break
+            }
+            if (!(enemyOccupiedSquares.some(occupiedSquare => occupiedSquare === squareName))) {
+                enemyPlacedShips.push(squareName)
+                enemyShip.addCoordinates(squareName)
+                count++
+            } else {
+                break
+            }
+        }
+    }
+    count = 0
+    if ((((numberIndex - 1) > -1) && rotation === 'vertical') || (((letterIndex - 1) > -1) && rotation === 'horizontal')) {
+        count--
+    }
+    if ((((numberIndex + 1) < 10) && rotation === 'vertical') || (((letterIndex + 1) < 10) && rotation === 'horizontal')) {
+        extensionShipSize++
+    }
+    while (extensionShipSize > count) {
+        if (isCollision) {
+            break
+        } else {
+            passed = true
+        }
+        if (rotation === 'vertical') {
+            let squareName = `${letter}${Number(number) + count}`
+            enemyOccupiedSquares.push(squareName)
+            if ((letterIndex - 1) > -1) { //no checking of if the square is in occupiedSquares, so it can append the same square multiple times, for now it does not really affect optimization
+                enemyOccupiedSquares.push(`${firstGridLetters[letterIndex - 1]}${Number(number) + count}`)
+            }
+            if ((letterIndex + 1) < 10) { //here too
+                enemyOccupiedSquares.push(`${firstGridLetters[letterIndex + 1]}${Number(number) + count}`)
+            }
+            count++
+        }
+        if (rotation === 'horizontal') {
+            let squareName = `${firstGridLetters[letterIndex + count]}${number}`
+            enemyOccupiedSquares.push(squareName)
+            if (numberIndex - 1 > -1) {
+                enemyOccupiedSquares.push(`${firstGridLetters[letterIndex + count]}${Number(number) - 1}`)
+            }
+            if (numberIndex + 1 < 10) {
+                enemyOccupiedSquares.push(`${firstGridLetters[letterIndex + count]}${Number(number) + 1}`)
+            }
+            count++
+        }
+    }
+    if (passed) {
+        placementCount++
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
