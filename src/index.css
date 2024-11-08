@@ -1,5 +1,5 @@
 h1 {
-    color: blue;
+    color: navy;
 }
 
 .first-naval-grid,
@@ -41,5 +41,27 @@ h1 {
 }
 
 .grid-blocks div {
-    background-color: blue;
+    background-color: navy;
+}
+
+.ship-selector {
+    max-width: 349px;
+    height: 200px;
+    display: flex;
+    flex-wrap:  wrap;
+    align-content: space-around;
+    justify-content: space-between;
+}
+
+.ship-selector span {
+    display: flex;
+    gap: 1px;
+    background-color: white;
+    flex-direction: row;
+}
+
+.ship-selector div {
+    width: 30px;
+    height: 30px;
+    background-color: grey;
 }
