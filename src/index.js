@@ -3,6 +3,7 @@ class Ship {
     name
     coordinates = []
     rotation = 'horizontal' || 'vertical'
+
     constructor(options) {
         this.size = options.size
         this.name = options.name
@@ -28,7 +29,6 @@ let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 let numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 let coordinates = []
 numbers.map(number => {letters.map(letter => {coordinates.push(`${letter}${number}`)})})
-console.log(coordinates)
 
 // ships selector preparations
 let shipsSizes = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1]
@@ -49,17 +49,12 @@ let ships = shipsSizes.map((n, i) => {
 // placment rules
 let horizontalPlacement = numbers.map(number => letters.map(letter => (`${letter}${number}`)))
 let verticalPlacement = letters.map(letter => numbers.map(number => (`${letter}${number}`)))
-console.log(horizontalPlacement, verticalPlacement)
 let selectedShip
 let selectedShipSegment
 let placedShips = []
 let occupiedSquares = []
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-document.getElementById('head').innerHTML = 'Battleship'
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
+// grid rendering
 
 letters.map(letter => {
     let letterElement = document.createElement('div')
@@ -96,17 +91,18 @@ coordinates.map((coordinate) => {
                                 }
                                 let appendingCoordinate = appenCoordinateRow[coordinateIndex + i]
                                 appenCoordinateList.push(appendingCoordinate)
-                                //adding prohibited squares
+                                appenOccupiedSquares.push(appendingCoordinate)
+                                // adding prohibited squares
                                 if (i === 0 && appenCoordinateRow[coordinateIndex - 1]) {
                                     appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex - 1])
-                                    //checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
+                                    // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                                     if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex - 1])
                                     if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex - 1])
                                 }
         
                                 if (i === selectedShip.size - 1 && appenCoordinateRow[coordinateIndex + i + 1]) {
                                     appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex + i + 1])
-                                    //checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
+                                    // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                                     if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex + i + 1])
                                     if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex + i + 1])
                                 }
@@ -124,16 +120,17 @@ coordinates.map((coordinate) => {
                                 }
                                 let appendingCoordinate = appenCoordinateColumn[coordinateIndex + i]
                                 appenCoordinateList.push(appendingCoordinate)
-                                //adding prohibited squares
+                                appenOccupiedSquares.push(appendingCoordinate)
+                                // adding prohibited squares
                                 if (i === 0 && appenCoordinateColumn[coordinateIndex - 1]) {
                                     appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex - 1])
-                                    //checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
+                                    // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                                     if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex - 1])
                                     if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex - 1])
                                 }
                                 if (i === selectedShip.size - 1 && appenCoordinateColumn[coordinateIndex + i + 1]) {
                                     appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex + i + 1])
-                                    //checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
+                                    // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                                     if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex + i + 1])
                                     if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex + i + 1])
                                 }
@@ -146,20 +143,20 @@ coordinates.map((coordinate) => {
 
                     selectedShip.addCoordinate(appenCoordinateList)
                     placedShips.push(selectedShip)
-                    occupiedSquares = [...occupiedSquares, ...appenOccupiedSquares]
+                    occupiedSquares = occupiedSquares.concat(appenOccupiedSquares)
+                    occupiedSquares = [...new Set(occupiedSquares)] // removing duplicated squares to not paint them multiple times
 
+                    occupiedSquares.forEach(square => {
+                        document.getElementById(square).style.background = 'blue'
+                    })
                     placedShips.forEach(ship => {
                         ship.coordinates.forEach(coord => {
                             document.getElementById(coord).style.background = 'grey'
                         })
                     })
-                    occupiedSquares.forEach(square => {
-                        document.getElementById(square).style.background = 'blue'
-                    })
                     
                     document.getElementById('shipSelector').removeChild(document.getElementById(`${selectedShip.name}`))
                     selectedShip = null
-                    console.log(placedShips, occupiedSquares)
                 } catch(error) {
                     console.log(error)
                 }
@@ -170,7 +167,7 @@ coordinates.map((coordinate) => {
     })
 
 
-/////////////////////////////////////ships selector///////////////////////////////////////////////////////////////
+// ships selector
 
 ships.forEach(ship => {
     let placingShip = document.createElement('span')
@@ -187,7 +184,7 @@ ships.forEach(ship => {
     document.getElementById('shipSelector').appendChild(placingShip)
 })
 
-////////////////////////////////////////rotate listener////////////////////////////////////////////////////////////
+// rotate listener
 
 addEventListener('keyup', event => {
     if (event.key === 'r') {
