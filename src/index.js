@@ -3,14 +3,15 @@ class Ship {
     name
     coordinates = []
     rotation = "horizontal" || "vertical"
+    selectedSegment
 
     constructor(options) {
         this.size = options.size
         this.name = options.name
     }
 
-    addCoordinate(c) {
-        this.coordinates = c
+    addCoordinate = (coords) => {
+        this.coordinates = coords
     }
 
     rotate = () => {
@@ -21,6 +22,10 @@ class Ship {
             this.rotation = "vertical"
             document.getElementById(this.name).style.flexDirection = "column"
         }
+    }
+
+    setSelectedSegment = (segment) => {
+        this.selectedSegment = segment
     }
 }
 
@@ -84,14 +89,15 @@ coordinates.map((coordinate) => {
             let appenCoordinateColumn = verticalPlacement[sqr.column]
             let appenCoordinateList = []
             let appenOccupiedSquares = []
+            let collisionSquares = []
 
             switch (selectedShip.rotation) {
                 case "horizontal":
                     for (let i = 0; i < selectedShip.size; i++) {
-                        let coordinateIndex = appenCoordinateRow.indexOf(coordinate)
-                        // if (!appenCoordinateRow[coordinateIndex + i] || occupiedSquares.includes(appenCoordinateRow[coordinateIndex + i])) {
-                        //     throw new Error('invalid placement')
-                        // }
+                        let coordinateIndex = appenCoordinateRow.indexOf(coordinate) - selectedShip.selectedSegment
+                        if (!appenCoordinateRow[coordinateIndex + i]) {
+                            continue
+                        }
                         let appendingCoordinate = appenCoordinateRow[coordinateIndex + i]
                         appenCoordinateList.push(appendingCoordinate)
                         appenOccupiedSquares.push(appendingCoordinate)
@@ -116,10 +122,10 @@ coordinates.map((coordinate) => {
                     break
                 case "vertical":
                     for (let i = 0; i < selectedShip.size; i++) {
-                        let coordinateIndex = appenCoordinateColumn.indexOf(coordinate)
-                        // if (!appenCoordinateColumn[coordinateIndex + i] || occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i])) {
-                        //     throw new Error('invalid placement')
-                        // }
+                        let coordinateIndex = appenCoordinateColumn.indexOf(coordinate) - selectedShip.selectedSegment
+                        if (!appenCoordinateRow[coordinateIndex + i]) {
+                            continue
+                        }
                         let appendingCoordinate = appenCoordinateColumn[coordinateIndex + i]
                         appenCoordinateList.push(appendingCoordinate)
                         appenOccupiedSquares.push(appendingCoordinate)
@@ -142,12 +148,18 @@ coordinates.map((coordinate) => {
                     break
             }
 
+            collisionSquares = occupiedSquares.filter((occSqr) => appenCoordinateList.includes(occSqr))
+            collisionSquares = collisionSquares.concat(appenOccupiedSquares.filter((occSqr) => placedShips.find((ship) => ship.coordinates.includes(occSqr))))
+
             appenOccupiedSquares.forEach((square) => {
                 document.getElementById(square).style.background = "blue"
             })
             appenCoordinateList.forEach((coord) => {
                 document.getElementById(coord).style.background = "grey"
                 document.getElementById(coord).style.border = "solid 1px black"
+            })
+            collisionSquares.forEach((coord) => {
+                document.getElementById(coord).style.background = "red"
             })
             document.getElementById(coordinate).addEventListener("mouseleave", () => {
                 appenOccupiedSquares.forEach((square) => {
@@ -156,14 +168,21 @@ coordinates.map((coordinate) => {
                 appenCoordinateList.forEach((coord) => {
                     document.getElementById(coord).style.background = "navy"
                 })
+                occupiedSquares.forEach((square) => {
+                    document.getElementById(square).style.background = "blue"
+                })
+                placedShips.forEach((ship) => {
+                    ship.coordinates.forEach((coord) => {
+                        document.getElementById(coord).style.background = "grey"
+                        document.getElementById(coord).style.border = "solid 1px black"
+                    })
+                })
             })
         }
     }
 
     let placementListener = () => {
-        console.log("ws")
         if (selectedShip) {
-            console.log("sdasd")
             try {
                 let appenCoordinateRow = horizontalPlacement[sqr.row]
                 let appenCoordinateColumn = verticalPlacement[sqr.column]
@@ -173,7 +192,7 @@ coordinates.map((coordinate) => {
                 switch (selectedShip.rotation) {
                     case "horizontal":
                         for (let i = 0; i < selectedShip.size; i++) {
-                            let coordinateIndex = appenCoordinateRow.indexOf(coordinate)
+                            let coordinateIndex = appenCoordinateRow.indexOf(coordinate) - selectedShip.selectedSegment
                             if (!appenCoordinateRow[coordinateIndex + i] || occupiedSquares.includes(appenCoordinateRow[coordinateIndex + i])) {
                                 throw new Error("invalid placement")
                             }
@@ -201,7 +220,7 @@ coordinates.map((coordinate) => {
                         break
                     case "vertical":
                         for (let i = 0; i < selectedShip.size; i++) {
-                            let coordinateIndex = appenCoordinateColumn.indexOf(coordinate)
+                            let coordinateIndex = appenCoordinateColumn.indexOf(coordinate) - selectedShip.selectedSegment
                             if (!appenCoordinateColumn[coordinateIndex + i] || occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i])) {
                                 throw new Error("invalid placement")
                             }
@@ -257,7 +276,8 @@ coordinates.map((coordinate) => {
 
 // ships selector
 // duchy of shit code...
-let prevHoveringSquare //
+let prevHoveringSquare
+let hoveringSquare
 let offsetLeft
 let offsetTop
 let offsetX
@@ -271,6 +291,12 @@ ships.forEach((ship) => {
         let shipSegment = document.createElement("div")
         shipSegment.id = ship.name + ` ${i + 1}`
         shipSegment.index = i
+        shipSegment.addEventListener("mousedown", () => {
+            setTimeout(() => {
+                // without this timeout selected ship will be undefined in this listener
+                selectedShip.setSelectedSegment(shipSegment.index)
+            }, 0)
+        })
         placingShip.appendChild(shipSegment)
     }
     placingShip.id = `${ship.name}`
@@ -278,13 +304,12 @@ ships.forEach((ship) => {
     let mouseMoveListener = (moveEvent) => {
         // here we trigger event, because when you drag the ship it overshadows grid
         // so much garbage code is needed due to optimization
-        let hoveringSquare = document.elementsFromPoint(moveEvent.clientX, moveEvent.clientY).find((element) => coordinates.some((coord) => coord === element.id))
+        hoveringSquare = document.elementsFromPoint(moveEvent.clientX, moveEvent.clientY).find((element) => coordinates.some((coord) => coord === element.id))
         if (hoveringSquare && prevHoveringSquare && hoveringSquare.id !== prevHoveringSquare.id) {
             prevHoveringSquare.dispatchEvent(new MouseEvent("mouseleave"))
             hoveringSquare.dispatchEvent(new MouseEvent("mouseenter"))
         }
         if (hoveringSquare) prevHoveringSquare = hoveringSquare
-        //
 
         mouseDispatchX = moveEvent.clientX ? moveEvent.clientX : mouseDispatchX
         mouseDispatchY = moveEvent.clientY ? moveEvent.clientY : mouseDispatchY
@@ -302,15 +327,22 @@ ships.forEach((ship) => {
         let rotateListener = (keyEvent) => {
             if (keyEvent.key === "r") {
                 selectedShip.rotate()
+                let rotateHoveringSquare = hoveringSquare // i dont know why but hovering square in ifelse below is undefined, probably something with the js scope
                 // the code below prevents the ship from being in kinky position when it is rotated
                 if (selectedShip.rotation === "vertical") {
                     offsetX = 15
-                    offsetY = 15
+                    offsetY = 15 * (selectedShip.selectedSegment + 1) * 2
                     document.dispatchEvent(new MouseEvent("mousemove"))
+                    rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
+                    rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseenter"))
+                    hoveringSquare = rotateHoveringSquare // this is needed for the same reason above
                 } else {
                     offsetX = downEvent.clientX - offsetLeft
                     offsetY = downEvent.clientY - offsetTop
                     document.dispatchEvent(new MouseEvent("mousemove"))
+                    rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
+                    rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseenter"))
+                    hoveringSquare = rotateHoveringSquare // this is needed for the same reason above
                 }
             }
         }
@@ -322,7 +354,9 @@ ships.forEach((ship) => {
         document.dispatchEvent(new MouseEvent("mousemove"))
         document.addEventListener("keyup", rotateListener)
         placingShip.addEventListener("mouseup", () => {
-            if (selectedShip.rotation === "vertical") {
+            hoveringSquare?.dispatchEvent(new MouseEvent("click"))
+            console.log(placedShips) //  todo makeplaced ships draggable
+            if (selectedShip?.rotation === "vertical") {
                 selectedShip.rotate()
             }
 
@@ -332,6 +366,7 @@ ships.forEach((ship) => {
             placingShip.style.top = ""
             placingShip.style.left = ""
             prevHoveringSquare = 0
+            hoveringSquare = null
             offsetLeft = 0
             offsetTop = 0
             offsetX = 0
