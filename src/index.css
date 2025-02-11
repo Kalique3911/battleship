@@ -9,13 +9,13 @@ h1 {
     grid-template-areas:
         "none letters"
         "numbers blocks";
-    grid-template-columns: 30px;
+    grid-template-columns: 32px;
 }
 
 .grid-numbers {
     grid-area: numbers;
     display: grid;
-    grid-template-rows: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-template-rows: 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px;
     grid-gap: 1px;
     text-align: center;
     align-items: center;
@@ -24,7 +24,7 @@ h1 {
 .grid-letters {
     grid-area: letters;
     display: grid;
-    grid-template-columns: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-template-columns: 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px;
     grid-gap: 1px;
     text-align: center;
     align-items: center;
@@ -33,15 +33,14 @@ h1 {
 .grid-blocks {
     grid-area: blocks;
     display: grid;
-    grid-template-rows: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
-    grid-template-columns: 30px 30px 30px 30px 30px 30px 30px 30px 30px 30px;
+    grid-template-rows: 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px;
+    grid-template-columns: 32px 32px 32px 32px 32px 32px 32px 32px 32px 32px;
     grid-gap: 1px;
-    width: 30px;
-    height: 30px;
 }
 
 .grid-blocks div {
     background-color: navy;
+    border: solid 1px black;
 }
 
 .ship-selector {

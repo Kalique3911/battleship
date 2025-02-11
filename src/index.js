@@ -84,6 +84,8 @@ coordinates.map((coordinate) => {
     sqr.column = verticalPlacement.findIndex((c) => c.find((coordinate) => coordinate === sqr.id))
 
     let placemenPreviewtListener = () => {
+        // Drawing listener when howering the ship over grid
+        console.log("placemenPreviewt")
         if (selectedShip) {
             let appenCoordinateRow = horizontalPlacement[sqr.row]
             let appenCoordinateColumn = verticalPlacement[sqr.column]
@@ -162,6 +164,8 @@ coordinates.map((coordinate) => {
                 document.getElementById(coord).style.background = "red"
             })
             document.getElementById(coordinate).addEventListener("mouseleave", () => {
+                // Redrawing listener when leawing the square
+                console.log("mouseleave")
                 appenOccupiedSquares.forEach((square) => {
                     document.getElementById(square).style.background = "navy"
                 })
@@ -182,6 +186,8 @@ coordinates.map((coordinate) => {
     }
 
     let placementListener = () => {
+        // Drawing listener when placed the ship
+        console.log("placement")
         if (selectedShip) {
             try {
                 let appenCoordinateRow = horizontalPlacement[sqr.row]
@@ -261,8 +267,8 @@ coordinates.map((coordinate) => {
                     })
                 })
 
-                document.getElementById("shipSelector").removeChild(document.getElementById(`${selectedShip.name}`))
-                selectedShip = null
+                // document.getElementById("shipSelector").removeChild(document.getElementById(`${selectedShip.name}`)) // to make ship draggable after placement we can set position to absolute with certain coordinates and pain grid back
+                // selectedShip = null !!!!!!!!!!!!!!!!!!!
             } catch (error) {
                 console.log(error)
             }
@@ -292,6 +298,8 @@ ships.forEach((ship) => {
         shipSegment.id = ship.name + ` ${i + 1}`
         shipSegment.index = i
         shipSegment.addEventListener("mousedown", () => {
+            // Listener to set ship segment index for dragging
+            console.log("mousedown on ship segment")
             setTimeout(() => {
                 // without this timeout selected ship will be undefined in this listener
                 selectedShip.setSelectedSegment(shipSegment.index)
@@ -302,8 +310,9 @@ ships.forEach((ship) => {
     placingShip.id = `${ship.name}`
 
     let mouseMoveListener = (moveEvent) => {
-        // here we trigger event, because when you drag the ship it overshadows grid
-        // so much garbage code is needed due to optimization
+        // Drawing dragging ship
+        console.log("mousemove")
+        // here we are triggering events, because when you drag the ship it overshadows grid
         hoveringSquare = document.elementsFromPoint(moveEvent.clientX, moveEvent.clientY).find((element) => coordinates.some((coord) => coord === element.id))
         if (hoveringSquare && prevHoveringSquare && hoveringSquare.id !== prevHoveringSquare.id) {
             prevHoveringSquare.dispatchEvent(new MouseEvent("mouseleave"))
@@ -318,6 +327,8 @@ ships.forEach((ship) => {
     }
 
     let mouseDownListener = (downEvent) => {
+        // Setting the ship to drag
+        console.log("mousedown on ship")
         offsetLeft = placingShip.offsetLeft
         offsetTop = placingShip.offsetTop
         offsetX = downEvent.clientX - offsetLeft
@@ -325,10 +336,10 @@ ships.forEach((ship) => {
         selectedShip = ship
 
         let rotateListener = (keyEvent) => {
+            console.log("rotate")
             if (keyEvent.key === "r") {
                 selectedShip.rotate()
-                let rotateHoveringSquare = hoveringSquare // i dont know why but hovering square in ifelse below is undefined, probably something with the js scope
-                // the code below prevents the ship from being in kinky position when it is rotated
+                let rotateHoveringSquare = hoveringSquare
                 if (selectedShip.rotation === "vertical") {
                     offsetX = 15
                     offsetY = 15 * (selectedShip.selectedSegment + 1) * 2
@@ -353,19 +364,29 @@ ships.forEach((ship) => {
         mouseDispatchY = downEvent.clientY
         document.dispatchEvent(new MouseEvent("mousemove"))
         document.addEventListener("keyup", rotateListener)
+
         placingShip.addEventListener("mouseup", () => {
+            console.log("mousesup")
             hoveringSquare?.dispatchEvent(new MouseEvent("click"))
-            console.log(placedShips) //  todo makeplaced ships draggable
-            if (selectedShip?.rotation === "vertical") {
+            prevHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
+            // todo make placed ships draggable
+            if (selectedShip?.rotation === "vertical" && !hoveringSquare) {
                 selectedShip.rotate()
             }
 
             document.removeEventListener("mousemove", mouseMoveListener)
             document.removeEventListener("keyup", rotateListener)
-            placingShip.style.position = ""
-            placingShip.style.top = ""
-            placingShip.style.left = ""
-            prevHoveringSquare = 0
+            if (hoveringSquare) {
+                console.log(hoveringSquare.getBoundingClientRect().top, selectedShip)
+                placingShip.style.top = hoveringSquare.getBoundingClientRect().top - (selectedShip?.rotation === "vertical" ? 33 * selectedShip.selectedSegment : 0) + "px"
+                placingShip.style.left = hoveringSquare.getBoundingClientRect().left - (selectedShip?.rotation === "horizontal" ? 33 * selectedShip.selectedSegment : 0) + "px"
+            } else {
+                placingShip.style.position = ""
+                placingShip.style.top = ""
+                placingShip.style.left = ""
+            }
+
+            prevHoveringSquare = null
             hoveringSquare = null
             offsetLeft = 0
             offsetTop = 0
@@ -373,12 +394,10 @@ ships.forEach((ship) => {
             offsetY = 0
             mouseDispatchX = 0
             mouseDispatchY = 0
-
             selectedShip = null
         })
     }
 
     placingShip.addEventListener("mousedown", mouseDownListener)
-
     document.getElementById("shipSelector").appendChild(placingShip)
 })
