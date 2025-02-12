@@ -2,8 +2,10 @@ class Ship {
     size
     name
     coordinates = []
+    occupiedSquares = []
     rotation = "horizontal" || "vertical"
     selectedSegment
+    XY
 
     constructor(options) {
         this.size = options.size
@@ -12,6 +14,10 @@ class Ship {
 
     addCoordinate = (coords) => {
         this.coordinates = coords
+    }
+
+    addOccupiedSquares = (coords) => {
+        this.occupiedSquares = coords
     }
 
     rotate = () => {
@@ -62,6 +68,7 @@ let selectedShip
 let selectedShipSegment
 let placedShips = []
 let occupiedSquares = []
+let invalidPlacement = null
 
 // grid rendering
 
@@ -252,7 +259,18 @@ coordinates.map((coordinate) => {
                         break
                 }
 
+                // repainting if placed ship is moved
+                let replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
+                if (replacedShip) {
+                    replacedShip.occupiedSquares.forEach((square) => {
+                        document.getElementById(square).style.background = "navy"
+                    })
+                    occupiedSquares = occupiedSquares.filter((square) => !replacedShip.occupiedSquares.includes(square))
+                    placedShips = placedShips.filter((ship) => !(ship.name === replacedShip.name))
+                }
+
                 selectedShip.addCoordinate(appenCoordinateList)
+                selectedShip.addOccupiedSquares(appenOccupiedSquares.filter((square) => !occupiedSquares.includes(square)))
                 placedShips.push(selectedShip)
                 occupiedSquares = occupiedSquares.concat(appenOccupiedSquares)
                 occupiedSquares = [...new Set(occupiedSquares)] // removing duplicated squares to not paint them multiple times
@@ -266,11 +284,9 @@ coordinates.map((coordinate) => {
                         document.getElementById(coord).style.border = "solid 1px black"
                     })
                 })
-
-                // document.getElementById("shipSelector").removeChild(document.getElementById(`${selectedShip.name}`)) // to make ship draggable after placement we can set position to absolute with certain coordinates and pain grid back
-                // selectedShip = null !!!!!!!!!!!!!!!!!!!
             } catch (error) {
                 console.log(error)
+                invalidPlacement = error
             }
         }
     }
@@ -281,7 +297,6 @@ coordinates.map((coordinate) => {
 })
 
 // ships selector
-// duchy of shit code...
 let prevHoveringSquare
 let hoveringSquare
 let offsetLeft
@@ -335,6 +350,12 @@ ships.forEach((ship) => {
         offsetY = downEvent.clientY - offsetTop
         selectedShip = ship
 
+        Array.from(document.getElementById("shipSelector").children).forEach((c) => {
+            if (c.id !== selectedShip.name) {
+                c.style.zIndex = -999
+            }
+        })
+
         let rotateListener = (keyEvent) => {
             console.log("rotate")
             if (keyEvent.key === "r") {
@@ -365,27 +386,39 @@ ships.forEach((ship) => {
         document.dispatchEvent(new MouseEvent("mousemove"))
         document.addEventListener("keyup", rotateListener)
 
-        placingShip.addEventListener("mouseup", () => {
+        let mouseUpListener = () => {
             console.log("mousesup")
+            Array.from(document.getElementById("shipSelector").children).forEach((c) => {
+                if (c.id !== selectedShip.name) {
+                    c.style.zIndex = ""
+                }
+            })
             hoveringSquare?.dispatchEvent(new MouseEvent("click"))
             prevHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
-            // todo make placed ships draggable
+            // TODO ROTATION ISSUE and REPLACING SHIP IN ITS COORDS
             if (selectedShip?.rotation === "vertical" && !hoveringSquare) {
                 selectedShip.rotate()
             }
 
             document.removeEventListener("mousemove", mouseMoveListener)
             document.removeEventListener("keyup", rotateListener)
-            if (hoveringSquare) {
+            placingShip.removeEventListener("mouseup", mouseUpListener)
+            if (hoveringSquare && !invalidPlacement) {
                 console.log(hoveringSquare.getBoundingClientRect().top, selectedShip)
                 placingShip.style.top = hoveringSquare.getBoundingClientRect().top - (selectedShip?.rotation === "vertical" ? 33 * selectedShip.selectedSegment : 0) + "px"
                 placingShip.style.left = hoveringSquare.getBoundingClientRect().left - (selectedShip?.rotation === "horizontal" ? 33 * selectedShip.selectedSegment : 0) + "px"
+                placingShip.XY = { X: placingShip.style.left, Y: placingShip.style.top }
+            } else if (placedShips.find((ship) => ship.name === selectedShip.name)) {
+                placingShip.style.top = placingShip.XY.Y
+                placingShip.style.left = placingShip.XY.X
+                // doing nothing if placed ship is replaced incorrectly
             } else {
                 placingShip.style.position = ""
                 placingShip.style.top = ""
                 placingShip.style.left = ""
             }
 
+            invalidPlacement = null
             prevHoveringSquare = null
             hoveringSquare = null
             offsetLeft = 0
@@ -395,7 +428,9 @@ ships.forEach((ship) => {
             mouseDispatchX = 0
             mouseDispatchY = 0
             selectedShip = null
-        })
+            console.log(occupiedSquares, placedShips)
+        }
+        placingShip.addEventListener("mouseup", mouseUpListener)
     }
 
     placingShip.addEventListener("mousedown", mouseDownListener)
