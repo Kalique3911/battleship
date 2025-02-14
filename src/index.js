@@ -99,6 +99,25 @@ coordinates.map((coordinate) => {
             let appenCoordinateList = []
             let appenOccupiedSquares = []
             let collisionSquares = []
+            let replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
+            let allowedSquares = []
+            console.log(occupiedSquares)
+            if (replacedShip) {
+                allowedSquares = occupiedSquares.filter((square) => {
+                    return (
+                        replacedShip.occupiedSquares.includes(square) &&
+                        !placedShips.find((ship) => {
+                            if (ship.name !== replacedShip.name) {
+                                ship.occupiedSquares.includes(square)
+                            }
+                        })
+                    )
+                })
+                occupiedSquares = occupiedSquares.filter((square) => !allowedSquares.includes(square))
+                allowedSquares.forEach((square) => {
+                    document.getElementById(square).style.background = "navy"
+                })
+            }
 
             switch (selectedShip.rotation) {
                 case "horizontal":
@@ -158,7 +177,9 @@ coordinates.map((coordinate) => {
             }
 
             collisionSquares = occupiedSquares.filter((occSqr) => appenCoordinateList.includes(occSqr))
-            collisionSquares = collisionSquares.concat(appenOccupiedSquares.filter((occSqr) => placedShips.find((ship) => ship.coordinates.includes(occSqr))))
+            collisionSquares = collisionSquares.concat(appenOccupiedSquares.filter((occSqr) => placedShips.find((ship) => ship.name !== replacedShip?.name && ship.coordinates.includes(occSqr))))
+            shipsSquares = placedShips.map((ship) => !ship.coordinates.includes(replacedShip?.coordinates[0]) && ship.coordinates).flat()
+            shipsSquares = shipsSquares.filter((square) => square)
 
             appenOccupiedSquares.forEach((square) => {
                 document.getElementById(square).style.background = "blue"
@@ -182,11 +203,8 @@ coordinates.map((coordinate) => {
                 occupiedSquares.forEach((square) => {
                     document.getElementById(square).style.background = "blue"
                 })
-                placedShips.forEach((ship) => {
-                    ship.coordinates.forEach((coord) => {
-                        document.getElementById(coord).style.background = "grey"
-                        document.getElementById(coord).style.border = "solid 1px black"
-                    })
+                shipsSquares.forEach((square) => {
+                    document.getElementById(square).style.background = "grey"
                 })
             })
         }
@@ -201,6 +219,7 @@ coordinates.map((coordinate) => {
                 let appenCoordinateColumn = verticalPlacement[sqr.column]
                 let appenCoordinateList = []
                 let appenOccupiedSquares = []
+                let replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
 
                 switch (selectedShip.rotation) {
                     case "horizontal":
@@ -260,7 +279,6 @@ coordinates.map((coordinate) => {
                 }
 
                 // repainting if placed ship is moved
-                let replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
                 if (replacedShip) {
                     replacedShip.occupiedSquares.forEach((square) => {
                         document.getElementById(square).style.background = "navy"
@@ -395,7 +413,7 @@ ships.forEach((ship) => {
             })
             hoveringSquare?.dispatchEvent(new MouseEvent("click"))
             prevHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
-            // TODO ROTATION ISSUE and REPLACING SHIP IN ITS COORDS
+            // TODO ROTATION ISSUE and FIX REPLACING SHIP IN ITS COORDS
             if (selectedShip?.rotation === "vertical" && !hoveringSquare) {
                 selectedShip.rotate()
             }
