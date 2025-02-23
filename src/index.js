@@ -4,6 +4,7 @@ class Ship {
     coordinates = []
     occupiedSquares = []
     rotation = "horizontal" || "vertical"
+    placedRotation = "horizontal" || "vertical"
     selectedSegment
     XY
 
@@ -69,6 +70,22 @@ let selectedShipSegment
 let placedShips = []
 let invalidPlacement = null
 let replacedShip
+let mouseLeaveListener = (event) => {
+    // Redrawing listener when leawing the square
+    if (selectedShip) {
+        if (!replacedShip) {
+            replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
+        }
+        console.log(selectedShip.occupiedSquares)
+
+        selectedShip.occupiedSquares.forEach((square) => {
+            if (!placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(square))) {
+                document.getElementById(square).style.background = "navy"
+            }
+        })
+    }
+    event.target.removeEventListener("mouseleave", mouseLeaveListener)
+}
 
 // grid rendering
 
@@ -171,6 +188,14 @@ coordinates.map((coordinate) => {
                 document.getElementById(coord).style.background = "grey"
                 document.getElementById(coord).style.border = "solid 1px black"
             })
+            placedShips.forEach((ship) => {
+                if (ship !== replacedShip) {
+                    ship.coordinates.forEach((coord) => {
+                        document.getElementById(coord).style.background = "grey"
+                        document.getElementById(coord).style.border = "solid 1px black"
+                    })
+                }
+            })
             collisionSquares.forEach((coord) => {
                 if (!replacedShip?.occupiedSquares.includes(coord)) {
                     document.getElementById(coord).style.background = "red"
@@ -183,7 +208,7 @@ coordinates.map((coordinate) => {
                     if (!replacedShip) {
                         replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
                     }
-                    console.log("mouseleave", appenOccupiedSquares)
+                    console.log("mouseleave")
 
                     appenOccupiedSquares.forEach((square) => {
                         if (!placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(square))) {
@@ -202,6 +227,12 @@ coordinates.map((coordinate) => {
         console.log("placement")
         if (selectedShip) {
             try {
+                let clientGrid = document.getElementById("secondSquares").getBoundingClientRect()
+                let shipRect = document.getElementById(selectedShip.name).getBoundingClientRect()
+                if (!(shipRect.left >= clientGrid.left && shipRect.right <= clientGrid.right && shipRect.top >= clientGrid.top && shipRect.bottom <= clientGrid.bottom)) {
+                    throw new Error("invalid placement")
+                }
+
                 let appenCoordinateRow = horizontalPlacement[sqr.row]
                 let appenCoordinateColumn = verticalPlacement[sqr.column]
                 let appenCoordinateList = []
@@ -210,6 +241,7 @@ coordinates.map((coordinate) => {
 
                 switch (selectedShip.rotation) {
                     case "horizontal":
+                        selectedShip.placedRotation = "horizontal"
                         for (let i = 0; i < selectedShip.size; i++) {
                             let coordinateIndex = appenCoordinateRow.indexOf(coordinate) - selectedShip.selectedSegment
 
@@ -239,6 +271,7 @@ coordinates.map((coordinate) => {
                         }
                         break
                     case "vertical":
+                        selectedShip.placedRotation = "vertical"
                         for (let i = 0; i < selectedShip.size; i++) {
                             let coordinateIndex = appenCoordinateColumn.indexOf(coordinate) - selectedShip.selectedSegment
                             if (!appenCoordinateColumn[coordinateIndex + i] || placedShips.find((ship) => ship.occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i]))) {
@@ -289,7 +322,25 @@ coordinates.map((coordinate) => {
                         document.getElementById(coord).style.border = "solid 1px black"
                     })
                 })
+
+                coordinates.forEach((coord) => document.getElementById(coord).removeEventListener("mouseleave", mouseLeaveListener))
+                placedShips.forEach((ship) => ship.coordinates.forEach((coord) => document.getElementById(coord).addEventListener("mouseleave", mouseLeaveListener)))
             } catch (error) {
+                coordinates.forEach((coord) => (document.getElementById(coord).style.background = "navy"))
+                placedShips.forEach((ship) => {
+                    ship.occupiedSquares.forEach((coord) => {
+                        document.getElementById(coord).style.background = "blue"
+                    })
+                })
+                placedShips.forEach((ship) => {
+                    ship.coordinates.forEach((coord) => {
+                        document.getElementById(coord).style.background = "grey"
+                        document.getElementById(coord).style.border = "solid 1px black"
+                    })
+                })
+                coordinates.forEach((coord) => document.getElementById(coord).removeEventListener("mouseleave", mouseLeaveListener))
+                placedShips.forEach((ship) => ship.coordinates.forEach((coord) => document.getElementById(coord).addEventListener("mouseleave", mouseLeaveListener)))
+
                 console.log(error)
                 invalidPlacement = error
             }
@@ -398,9 +449,12 @@ ships.forEach((ship) => {
                     c.style.zIndex = ""
                 }
             })
-            hoveringSquare?.dispatchEvent(new MouseEvent("click"))
-            // TODO ROTATION ISSUE, BORDER GRABBING, WHEN REPLACING SHIP WITH ANOTHER SEGMENT, REDRAWING WHEN SHIP IS PLACED INCORRECTLY
-            if (selectedShip?.rotation === "vertical" && !hoveringSquare) {
+            hoveringSquare ? hoveringSquare.dispatchEvent(new MouseEvent("click")) : prevHoveringSquare?.dispatchEvent(new MouseEvent("click"))
+            if (!hoveringSquare && !prevHoveringSquare) {
+                invalidPlacement = true
+            }
+            // TODO ROTATION ISSUE, BORDER GRABBING
+            if (selectedShip?.rotation !== selectedShip?.placedRotation && invalidPlacement) {
                 selectedShip.rotate()
             }
 
@@ -414,6 +468,7 @@ ships.forEach((ship) => {
             } else if (placedShips.find((ship) => ship.name === selectedShip.name)) {
                 placingShip.style.top = placingShip.XY.Y
                 placingShip.style.left = placingShip.XY.X
+                selectedShip.rotation = selectedShip.placedRotation
                 // doing nothing if placed ship is replaced incorrectly
             } else {
                 placingShip.style.position = ""
