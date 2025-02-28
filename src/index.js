@@ -13,7 +13,7 @@ class Ship {
         this.name = options.name
     }
 
-    addCoordinate = (coords) => {
+    addCoordinates = (coords) => {
         this.coordinates = coords
     }
 
@@ -37,6 +37,19 @@ class Ship {
 
     setSelectedSegment = (segment) => {
         this.selectedSegment = segment
+    }
+
+    setPlacedRotation = (mode) => {
+        this.placedRotation = mode
+    }
+
+    reset = () => {
+        this.setPlacedRotation("horizontal")
+        this.rotation === "vertical" && this.rotate()
+        this.addCoordinates([])
+        this.addOccupiedSquares([])
+        this.setXY(null)
+        this.setSelectedSegment(null)
     }
 }
 
@@ -220,10 +233,15 @@ coordinates.map((coordinate) => {
             try {
                 let clientGrid = document.getElementById("secondSquares").getBoundingClientRect()
                 let shipRect = document.getElementById(selectedShip.name).getBoundingClientRect()
-                if (!(shipRect.left >= clientGrid.left && shipRect.right <= clientGrid.right && shipRect.top >= clientGrid.top && shipRect.bottom <= clientGrid.bottom)) {
+                if (shipRect.right <= clientGrid.left || shipRect.left >= clientGrid.right || shipRect.top >= clientGrid.bottom || shipRect.bottom <= clientGrid.top || invalidPlacement) {
+                    selectedShip.reset()
+                    let shipElement = document.getElementById(selectedShip.name)
+                    shipElement.style.position = ""
+                    shipElement.style.top = ""
+                    shipElement.style.left = ""
+                    placedShips.splice(placedShips.indexOf(selectedShip), 1)
                     throw new Error("invalid placement")
                 }
-
                 let appenCoordinateRow = horizontalPlacement[sqr.row]
                 let appenCoordinateColumn = verticalPlacement[sqr.column]
                 let appenCoordinateList = []
@@ -232,7 +250,7 @@ coordinates.map((coordinate) => {
 
                 switch (selectedShip.rotation) {
                     case "horizontal":
-                        selectedShip.placedRotation = "horizontal"
+                        selectedShip.setPlacedRotation("horizontal")
                         for (let i = 0; i < selectedShip.size; i++) {
                             let coordinateIndex = appenCoordinateRow.indexOf(coordinate) - selectedShip.selectedSegment
 
@@ -259,7 +277,7 @@ coordinates.map((coordinate) => {
                         }
                         break
                     case "vertical":
-                        selectedShip.placedRotation = "vertical"
+                        selectedShip.setPlacedRotation("vertical")
                         for (let i = 0; i < selectedShip.size; i++) {
                             let coordinateIndex = appenCoordinateColumn.indexOf(coordinate) - selectedShip.selectedSegment
                             if (!appenCoordinateColumn[coordinateIndex + i] || placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i]))) {
@@ -291,7 +309,7 @@ coordinates.map((coordinate) => {
                     placedShips = placedShips.filter((ship) => !(ship.name === replacedShip.name))
                 }
 
-                selectedShip.addCoordinate(appenCoordinateList)
+                selectedShip.addCoordinates(appenCoordinateList)
                 selectedShip.addOccupiedSquares(appenOccupiedSquares)
                 placedShips.push(selectedShip)
 
@@ -441,17 +459,19 @@ ships.forEach((ship) => {
         )
         document.addEventListener("keyup", rotateListener)
 
-        let mouseUpListener = () => {
+        let mouseUpListener = (event) => {
             // placing ship
             Array.from(document.getElementById("shipSelector").children).forEach((c) => {
                 if (c.id !== selectedShip.name) {
                     c.style.zIndex = ""
                 }
             })
-            hoveringSquare ? hoveringSquare.dispatchEvent(new MouseEvent("click")) : prevHoveringSquare?.dispatchEvent(new MouseEvent("click"))
-            if (!hoveringSquare && !prevHoveringSquare) {
+            let clientGrid = document.getElementById("secondSquares").getBoundingClientRect()
+            if ((!hoveringSquare && !prevHoveringSquare) || event.clientX <= clientGrid.left || event.clientX >= clientGrid.right || event.clientY <= clientGrid.top || event.clientY >= clientGrid.bottom) {
                 invalidPlacement = true
             }
+            hoveringSquare ? hoveringSquare.dispatchEvent(new MouseEvent("click")) : prevHoveringSquare?.dispatchEvent(new MouseEvent("click"))
+
             if (selectedShip?.rotation !== selectedShip?.placedRotation && invalidPlacement) {
                 selectedShip.rotate()
             }
@@ -466,7 +486,6 @@ ships.forEach((ship) => {
             } else if (placedShips.find((ship) => ship.name === selectedShip.name)) {
                 placingShip.style.top = selectedShip.XY.Y
                 placingShip.style.left = selectedShip.XY.X
-                selectedShip.rotation = selectedShip.placedRotation
             } else {
                 placingShip.style.position = ""
                 placingShip.style.top = ""
@@ -490,6 +509,23 @@ ships.forEach((ship) => {
 
     placingShip.addEventListener("mousedown", mouseDownListener)
     document.getElementById("shipSelector").appendChild(placingShip)
+})
+
+document.getElementById("reset").addEventListener("click", () => {
+    placedShips.forEach((ship) => {
+        document.getElementById(ship.coordinates[0]).removeEventListener("mouseleave", mouseLeaveListener)
+        ship.reset()
+        let shipElement = document.getElementById(ship.name)
+        shipElement.style.position = ""
+        shipElement.style.top = ""
+        shipElement.style.left = ""
+    })
+    placedShips = []
+    coordinates.forEach((coord) => {
+        let square = document.getElementById(coord)
+        square.style.background = "navy"
+        square.removeEventListener("mouseleave", mouseLeaveListener)
+    })
 })
 
 window.addEventListener("resize", () => {
