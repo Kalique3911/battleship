@@ -31,6 +31,10 @@ class Ship {
         }
     }
 
+    setXY = (X, Y) => {
+        this.XY = { X: X, Y: Y }
+    }
+
     setSelectedSegment = (segment) => {
         this.selectedSegment = segment
     }
@@ -76,8 +80,6 @@ let mouseLeaveListener = (event) => {
         if (!replacedShip) {
             replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
         }
-        console.log(selectedShip.occupiedSquares)
-
         selectedShip.occupiedSquares.forEach((square) => {
             if (!placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(square))) {
                 document.getElementById(square).style.background = "navy"
@@ -88,7 +90,6 @@ let mouseLeaveListener = (event) => {
 }
 
 // grid rendering
-
 letters.map((letter) => {
     let letterElement = document.createElement("div")
     letterElement.innerHTML = letter
@@ -109,9 +110,7 @@ coordinates.map((coordinate) => {
 
     let placemenPreviewtListener = () => {
         // Drawing listener when howering the ship over grid
-
         if (selectedShip) {
-            console.log("placemenPreviewt")
             let appenCoordinateRow = horizontalPlacement[sqr.row]
             let appenCoordinateColumn = verticalPlacement[sqr.column]
             let appenCoordinateList = []
@@ -129,17 +128,14 @@ coordinates.map((coordinate) => {
                         let appendingCoordinate = appenCoordinateRow[coordinateIndex + i]
                         appenCoordinateList.push(appendingCoordinate)
                         appenOccupiedSquares.push(appendingCoordinate)
-                        // adding prohibited squares
                         if (i === 0 && appenCoordinateRow[coordinateIndex - 1]) {
                             appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex - 1])
-                            // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                             if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex - 1])
                             if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex - 1])
                         }
 
                         if (i === selectedShip.size - 1 && appenCoordinateRow[coordinateIndex + i + 1]) {
                             appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex + i + 1])
-                            // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                             if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex + i + 1])
                             if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex + i + 1])
                         }
@@ -157,16 +153,13 @@ coordinates.map((coordinate) => {
                         let appendingCoordinate = appenCoordinateColumn[coordinateIndex + i]
                         appenCoordinateList.push(appendingCoordinate)
                         appenOccupiedSquares.push(appendingCoordinate)
-                        // adding prohibited squares
                         if (i === 0 && appenCoordinateColumn[coordinateIndex - 1]) {
                             appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex - 1])
-                            // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                             if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex - 1])
                             if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex - 1])
                         }
                         if (i === selectedShip.size - 1 && appenCoordinateColumn[coordinateIndex + i + 1]) {
                             appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex + i + 1])
-                            // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                             if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex + i + 1])
                             if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex + i + 1])
                         }
@@ -208,7 +201,6 @@ coordinates.map((coordinate) => {
                     if (!replacedShip) {
                         replacedShip = placedShips.find((ship) => ship.name === selectedShip.name)
                     }
-                    console.log("mouseleave")
 
                     appenOccupiedSquares.forEach((square) => {
                         if (!placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(square))) {
@@ -224,7 +216,6 @@ coordinates.map((coordinate) => {
 
     let placementListener = () => {
         // Drawing listener when placed the ship
-        console.log("placement")
         if (selectedShip) {
             try {
                 let clientGrid = document.getElementById("secondSquares").getBoundingClientRect()
@@ -251,17 +242,14 @@ coordinates.map((coordinate) => {
                             let appendingCoordinate = appenCoordinateRow[coordinateIndex + i]
                             appenCoordinateList.push(appendingCoordinate)
                             appenOccupiedSquares.push(appendingCoordinate)
-                            // adding prohibited squares
                             if (i === 0 && appenCoordinateRow[coordinateIndex - 1]) {
                                 appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex - 1])
-                                // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                                 if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex - 1])
                                 if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex - 1])
                             }
 
                             if (i === selectedShip.size - 1 && appenCoordinateRow[coordinateIndex + i + 1]) {
                                 appenOccupiedSquares.push(appenCoordinateRow[coordinateIndex + i + 1])
-                                // checking if square row has upper or lower row next to it to provide adding squares to occupiedSquares
                                 if (sqr.row !== 0) appenOccupiedSquares.push(horizontalPlacement[sqr.row - 1][coordinateIndex + i + 1])
                                 if (sqr.row !== 9) appenOccupiedSquares.push(horizontalPlacement[sqr.row + 1][coordinateIndex + i + 1])
                             }
@@ -274,22 +262,19 @@ coordinates.map((coordinate) => {
                         selectedShip.placedRotation = "vertical"
                         for (let i = 0; i < selectedShip.size; i++) {
                             let coordinateIndex = appenCoordinateColumn.indexOf(coordinate) - selectedShip.selectedSegment
-                            if (!appenCoordinateColumn[coordinateIndex + i] || placedShips.find((ship) => ship.occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i]))) {
+                            if (!appenCoordinateColumn[coordinateIndex + i] || placedShips.find((ship) => ship !== replacedShip && ship.occupiedSquares.includes(appenCoordinateColumn[coordinateIndex + i]))) {
                                 throw new Error("invalid placement")
                             }
                             let appendingCoordinate = appenCoordinateColumn[coordinateIndex + i]
                             appenCoordinateList.push(appendingCoordinate)
                             appenOccupiedSquares.push(appendingCoordinate)
-                            // adding prohibited squares
                             if (i === 0 && appenCoordinateColumn[coordinateIndex - 1]) {
                                 appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex - 1])
-                                // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                                 if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex - 1])
                                 if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex - 1])
                             }
                             if (i === selectedShip.size - 1 && appenCoordinateColumn[coordinateIndex + i + 1]) {
                                 appenOccupiedSquares.push(appenCoordinateColumn[coordinateIndex + i + 1])
-                                // checking if square column has upper or lower column next to it to provide adding squares to occupiedSquares
                                 if (sqr.column !== 0) appenOccupiedSquares.push(verticalPlacement[sqr.column - 1][coordinateIndex + i + 1])
                                 if (sqr.column !== 9) appenOccupiedSquares.push(verticalPlacement[sqr.column + 1][coordinateIndex + i + 1])
                             }
@@ -299,7 +284,6 @@ coordinates.map((coordinate) => {
                         break
                 }
 
-                // repainting if placed ship is moved
                 if (replacedShip) {
                     replacedShip.occupiedSquares.forEach((square) => {
                         document.getElementById(square).style.background = "navy"
@@ -352,7 +336,6 @@ coordinates.map((coordinate) => {
     document.getElementById("secondSquares").appendChild(sqr)
 })
 
-// ships selector
 let prevHoveringSquare
 let hoveringSquare
 let offsetLeft
@@ -369,8 +352,6 @@ ships.forEach((ship) => {
         shipSegment.id = ship.name + ` ${i + 1}`
         shipSegment.index = i
         shipSegment.addEventListener("mousedown", () => {
-            // Listener to set ship segment index for dragging
-            console.log("mousedown on ship segment")
             setTimeout(() => {
                 // without this timeout selected ship will be undefined in this listener
                 selectedShip.setSelectedSegment(shipSegment.index)
@@ -382,7 +363,6 @@ ships.forEach((ship) => {
 
     let mouseMoveListener = (moveEvent) => {
         // Drawing dragging ship
-        console.log("mousemove")
         // here we are triggering events, because when you drag the ship it overshadows grid
         hoveringSquare = document.elementsFromPoint(moveEvent.clientX, moveEvent.clientY).find((element) => coordinates.some((coord) => coord === element.id))
         if (hoveringSquare && prevHoveringSquare && hoveringSquare.id !== prevHoveringSquare.id && selectedShip) {
@@ -399,13 +379,23 @@ ships.forEach((ship) => {
 
     let mouseDownListener = (downEvent) => {
         // Setting the ship to drag
-        console.log("mousedown on ship")
         offsetLeft = placingShip.offsetLeft
         offsetTop = placingShip.offsetTop
         offsetX = downEvent.clientX - offsetLeft
         offsetY = downEvent.clientY - offsetTop
         selectedShip = ship
 
+        let placingShipRect = placingShip.getBoundingClientRect()
+        if (Math.abs(placingShipRect.top - downEvent.clientY) < placingShipRect.height * 0.1) {
+            offsetY = offsetY + 5
+        } else if (Math.abs(placingShipRect.bottom - downEvent.clientY) < 5) {
+            offsetY = offsetY - 5
+        }
+        if (Math.abs(placingShipRect.left - downEvent.clientX) < 5) {
+            offsetX = offsetX + 5
+        } else if (Math.abs(placingShipRect.right - downEvent.clientX) < 5) {
+            offsetX = offsetX - 5
+        }
         Array.from(document.getElementById("shipSelector").children).forEach((c) => {
             if (c.id !== selectedShip.name) {
                 c.style.zIndex = -999
@@ -413,24 +403,27 @@ ships.forEach((ship) => {
         })
 
         let rotateListener = (keyEvent) => {
-            console.log("rotate")
             if (keyEvent.key === "r") {
                 selectedShip.rotate()
                 let rotateHoveringSquare = hoveringSquare
                 if (selectedShip.rotation === "vertical") {
-                    offsetX = 15
-                    offsetY = 15 * (selectedShip.selectedSegment + 1) * 2
+                    let tempX = offsetX
+                    let tempY = 32 - offsetY
+                    offsetY = tempX
+                    offsetX = tempY
                     document.dispatchEvent(new MouseEvent("mousemove"))
                     rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
                     rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseenter"))
-                    hoveringSquare = rotateHoveringSquare // this is needed for the same reason above
+                    hoveringSquare = rotateHoveringSquare
                 } else if (selectedShip.rotation === "horizontal") {
-                    offsetX = downEvent.clientX - offsetLeft
-                    offsetY = downEvent.clientY - offsetTop
+                    let tempX = 32 - offsetX
+                    let tempY = offsetY
+                    offsetX = tempY
+                    offsetY = tempX
                     document.dispatchEvent(new MouseEvent("mousemove"))
                     rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseleave"))
                     rotateHoveringSquare?.dispatchEvent(new MouseEvent("mouseenter"))
-                    hoveringSquare = rotateHoveringSquare // this is needed for the same reason above
+                    hoveringSquare = rotateHoveringSquare
                 }
             }
         }
@@ -439,11 +432,17 @@ ships.forEach((ship) => {
         document.addEventListener("mousemove", mouseMoveListener)
         mouseDispatchX = downEvent.clientX
         mouseDispatchY = downEvent.clientY
-        document.dispatchEvent(new MouseEvent("mousemove"))
+
+        document.dispatchEvent(
+            new MouseEvent("mousemove", {
+                clientX: downEvent.clientX,
+                clientY: downEvent.clientY,
+            })
+        )
         document.addEventListener("keyup", rotateListener)
 
         let mouseUpListener = () => {
-            console.log("mousesup")
+            // placing ship
             Array.from(document.getElementById("shipSelector").children).forEach((c) => {
                 if (c.id !== selectedShip.name) {
                     c.style.zIndex = ""
@@ -453,7 +452,6 @@ ships.forEach((ship) => {
             if (!hoveringSquare && !prevHoveringSquare) {
                 invalidPlacement = true
             }
-            // TODO ROTATION ISSUE, BORDER GRABBING
             if (selectedShip?.rotation !== selectedShip?.placedRotation && invalidPlacement) {
                 selectedShip.rotate()
             }
@@ -462,14 +460,13 @@ ships.forEach((ship) => {
             document.removeEventListener("keyup", rotateListener)
             placingShip.removeEventListener("mouseup", mouseUpListener)
             if (hoveringSquare && !invalidPlacement) {
-                placingShip.style.top = hoveringSquare.getBoundingClientRect().top - (selectedShip?.rotation === "vertical" ? 33 * selectedShip.selectedSegment : 0) + "px"
-                placingShip.style.left = hoveringSquare.getBoundingClientRect().left - (selectedShip?.rotation === "horizontal" ? 33 * selectedShip.selectedSegment : 0) + "px"
-                placingShip.XY = { X: placingShip.style.left, Y: placingShip.style.top }
+                placingShip.style.top = hoveringSquare.getBoundingClientRect().top - (selectedShip?.rotation === "vertical" ? 32 * selectedShip.selectedSegment : 0) + "px"
+                placingShip.style.left = hoveringSquare.getBoundingClientRect().left - (selectedShip?.rotation === "horizontal" ? 32 * selectedShip.selectedSegment : 0) + "px"
+                selectedShip.setXY(placingShip.style.left, placingShip.style.top)
             } else if (placedShips.find((ship) => ship.name === selectedShip.name)) {
-                placingShip.style.top = placingShip.XY.Y
-                placingShip.style.left = placingShip.XY.X
+                placingShip.style.top = selectedShip.XY.Y
+                placingShip.style.left = selectedShip.XY.X
                 selectedShip.rotation = selectedShip.placedRotation
-                // doing nothing if placed ship is replaced incorrectly
             } else {
                 placingShip.style.position = ""
                 placingShip.style.top = ""
@@ -487,11 +484,20 @@ ships.forEach((ship) => {
             mouseDispatchX = 0
             mouseDispatchY = 0
             selectedShip = null
-            console.log(placedShips)
         }
         placingShip.addEventListener("mouseup", mouseUpListener)
     }
 
     placingShip.addEventListener("mousedown", mouseDownListener)
     document.getElementById("shipSelector").appendChild(placingShip)
+})
+
+window.addEventListener("resize", () => {
+    placedShips.forEach((ship) => {
+        let placedShip = document.getElementById(ship.name)
+        let squareCoordinates = document.getElementById(ship.coordinates[0]).getBoundingClientRect()
+        ship.setXY(squareCoordinates.left, squareCoordinates.top)
+        placedShip.style.top = ship.XY.Y + "px"
+        placedShip.style.left = ship.XY.X + "px"
+    })
 })
